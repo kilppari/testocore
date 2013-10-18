@@ -73,6 +73,8 @@ class MemoryPool {
     // Returns one free block from the pool. If no free blocks, returns NULL.
     void* alloc( void );
     // Sets the given block back into the pool as a free block.
-    void  dealloc( void* ptr );
-    };
+    void dealloc( void* ptr );
+
+    uint32_t getFreeBlockCount( void );
+};
 #endif /* #ifndef MEM_POOL_H */

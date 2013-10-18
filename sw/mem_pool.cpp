@@ -24,7 +24,6 @@
 //#define NDEBUG
 #include <assert.h>
 
-
 #include "mem_pool.h"
 
 #ifndef NDEBUG
@@ -48,13 +47,13 @@ MemoryPool::MemoryPool(
         "Error: Block size must be big enough to hold one pointer when the block is not used\n" );
 
     m_pPool = malloc( ( SIZE_MEM_BLOCK_HEADER + block_size ) * block_count );
-    DPRINT( "allocated pool size: %lu\n", ( SIZE_MEM_BLOCK_HEADER + block_size ) * block_count )
+//    DPRINT( "allocated pool size: %lu\n", ( SIZE_MEM_BLOCK_HEADER + block_size ) * block_count )
     assert( m_pPool && "ERROR: could not allocate memory for the pool" );
 
     // Init Pointer to first free mem block
     m_pFreeMemBlock = ( MemBlockStr* )m_pPool;
     MemBlockStr* pBlock = m_pFreeMemBlock;
-    printf( "pBlock: %p\n", pBlock );
+//    printf( "pBlock: %p\n", pBlock );
     for( uint32_t i = 0; i < block_count; i++ )
         {
         pBlock->header = pool_id;
@@ -64,7 +63,7 @@ MemoryPool::MemoryPool(
             pBlock->pData = ( void* )( ( uint8_t* )pBlock + SIZE_MEM_BLOCK_HEADER + block_size );
             }
         pBlock = ( MemBlockStr* )pBlock->pData;
-        DPRINT( "pBlock: %p\n", pBlock )
+//        DPRINT( "pBlock: %p\n", pBlock )
         }
     }
 
@@ -90,7 +89,7 @@ void* MemoryPool::alloc( void )
     m_pFreeMemBlock = ( MemBlockStr* )( pBlock->pData );
 
     pBlock->header = m_PoolId; // For now, put only pool id as header data
-
+    pBlock->header |= ( 1 << 31 );
     return &( pBlock->pData );
     }
 
@@ -98,5 +97,24 @@ void MemoryPool::dealloc( void* ptr )
     {
     MemBlockStr* pBlock = ( MemBlockStr* )( ( uint8_t* )ptr - SIZE_MEM_BLOCK_HEADER );
     pBlock->pData = ( void* )m_pFreeMemBlock;
+    pBlock->header &= ~( 1 << 31 );
     m_pFreeMemBlock = pBlock;
     }
+
+uint32_t MemoryPool::getFreeBlockCount( void ) {
+
+    uint32_t count = 0;
+
+    if( m_pFreeMemBlock == NULL ) {
+       return count;
+    }
+
+    MemBlockStr* pBlock = m_pFreeMemBlock;
+    while( pBlock != NULL ) {
+    if( !( pBlock->header & ( 1 << 31 ) ) ) {
+        count++;
+    }
+        pBlock = ( MemBlockStr* )pBlock->pData;
+    }
+    return count;
+}

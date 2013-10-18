@@ -23,13 +23,23 @@
 
 #include "ut.h"
 
-void TestCase::startStep( uint32_t num ) {
+TestCaseBase::TestCaseBase( const char* name ) : m_Name( name ) {
+    printf( "\nStarting %s...\n\n", name );
+}
+
+void TestCaseBase::execute() {
+    printDivider();
+    printf( "%s\n", m_Name );
+    printDivider();
+}
+
+void TestCaseBase::startStep( uint32_t num ) {
     printDivider();
     printf( "TC step %u\n", num );
     printDivider();
 }
 
-void TestCase::checkExpectedOutput( bool arg ) {
+void TestCaseBase::checkExpectedOutput( bool arg ) {
     if( arg ) {
         // TODO: Success case
     }
@@ -37,4 +47,8 @@ void TestCase::checkExpectedOutput( bool arg ) {
         // TODO: Failure case
     }
 }
-
+/*
+void TestCaseBase::comment( const char* str ) {
+    printf( "%s\n", str );
+}
+*/
