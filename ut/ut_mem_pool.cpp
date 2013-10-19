@@ -3,8 +3,8 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "mem_pool.h"
-#include "ut.h"
+#include "../sw/mem_pool.h"
+#include "../sw/ut.h"
 
 #define BLOCK_COUNT 10000
 #define BLOCK_SIZE 1000
@@ -45,7 +45,7 @@ void TestCase::runTest( void ) {
      */
     MemoryPool MemPool( 1, BLOCK_SIZE, BLOCK_COUNT );
     void* temp_ptr[ BLOCK_COUNT ];
-
+#if 0
     struct timespec ts;
     struct timespec ts2;
 
@@ -73,7 +73,7 @@ void TestCase::runTest( void ) {
     clock_gettime( CLOCK_MONOTONIC,&ts2 );
 
     UT_COMMENT( "Total time for malloc:\t\t%luus\n", ( ts2.tv_nsec - ts.tv_nsec ) / 1000 );
-
+#endif
 /* ------------------------------
    TC 2
    ------------------------------ */
