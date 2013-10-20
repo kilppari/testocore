@@ -105,4 +105,9 @@ void TestCase::runTest( void ) {
 
     printDivider();
     return;
+
+/* ------------------------------
+   TC 3
+   ------------------------------ */
+
 }

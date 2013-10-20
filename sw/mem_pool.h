@@ -1,6 +1,6 @@
 /******************************************************************************/
 /**
-    Memory pool implementation for Testocore 2D engine.
+    Memory pool and memory pool manager implementation for Testocore engine.
     Copyright (C) 2013 Pekka Mäkinen
 
     This program is free software; you can redistribute it and/or modify
@@ -45,36 +45,88 @@ struct MemBlockStr {
  * smaller blocks to be used by the client.
  */
 class MemoryPool {
-    private:
+private:
     // Pointer to pool's address space (the address returned by malloc)
     void*               m_pPool;
     // Pointer to next free memory block in the pool
     MemBlockStr*        m_pFreeMemBlock;
-    // Pool's id for distinguishing multiple pools
-    uint32_t            m_PoolId;
     // Size of one memory block (in bytes)
     uint32_t            m_BlockSize;
     // Number of memory block in the pool
     uint32_t            m_BlockCount;
+    // Pool's id for distinguishing multiple pools
+    uint16_t            m_PoolId;
 
-    public:
+    // Disable copy constructor
+    MemoryPool( const MemoryPool& copy );
 
-    /**
-     * Constructor.
-     * Allocates memory and initializes the blocks. Sets pool id.
-     */
-    MemoryPool( uint32_t pool_index, uint32_t block_size, uint32_t block_count );
-    // Destructor, frees the allocated memory.
+public:
+    // Allocates memory and initializes the blocks. Sets pool id.
+    explicit MemoryPool( uint32_t pool_index, uint32_t block_size, uint32_t block_count );
+    // Destructor frees the allocated memory.
     ~MemoryPool( void );
 
     // Getters and setters:
     void* getPoolPtr( void ) { return m_pPool; }
+    uint32_t getBlockSize( void ) { return m_BlockSize; }
+    uint16_t getPoolId( void ) { return m_PoolId; }
+    void setPoolId( uint16_t id ) { m_PoolId = id; }
 
     // Returns one free block from the pool. If no free blocks, returns NULL.
     void* alloc( void );
     // Sets the given block back into the pool as a free block.
     void dealloc( void* ptr );
-
+    // Returns the number of free memory blocks in the pool
     uint32_t getFreeBlockCount( void );
 };
+
+/**
+ * Helps in the use of multiple memory pools by forwarding allocations
+ * and deallocations to correct pools.
+ */
+class MemPoolManager {
+private:
+    // Custom linked list structures for browsing through different pools
+    struct MemPoolNodeStr {
+        MemPoolNodeStr* pNext;
+        MemPoolNodeStr* pPrev;
+        MemoryPool* pPool;
+    };
+    struct MemPoolListStr {
+        MemPoolNodeStr* pHead;
+        MemPoolNodeStr* pTail;
+    };
+
+    // Linked list of managed memory pools
+    MemPoolListStr m_PoolList;
+    // Running number for new pool IDs
+    uint32_t m_PoolIdCounter;
+
+    // Disable copy constructor
+    MemPoolManager( const MemPoolManager& copy );
+
+    // Utilities for managing the MemPool linked list
+    void insertPoolNode( MemPoolNodeStr* node_ptr );
+    void removePoolNode( MemPoolNodeStr* node_ptr );
+
+public:
+    MemPoolManager();
+    ~MemPoolManager();
+
+    // Inserts new pool into the list and assigns id for the pool
+    bool addPool( MemoryPool* pool_ptr );
+    // Removes and destroys pool based on given id
+    bool removePool( uint16_t id );
+    // Removes and destroys pool based on given block size
+    bool removePoolByBlockSize( uint32_t size );
+    // Clears the pool list and destroys all pools
+    void clearPoolList( void );
+    // Returns number of pools in the list
+    uint16_t getPoolCount( void );
+    // Chooses the most suitable pool and allocates block from it
+    void* alloc( uint32_t bytes );
+    // deallocates a block from correct pool
+    void dealloc( void* ptr );
+};
+
 #endif /* #ifndef MEM_POOL_H */
