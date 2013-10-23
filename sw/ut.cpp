@@ -21,31 +21,69 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <string>
+
 #include "ut.h"
 
-TestCaseBase::TestCaseBase( const char* name ) : m_Name( name ) {
-    printf( "\nStarting %s...\n\n", name );
-}
+const std::string TestCaseBase::kDivider =
+    "-------------------------------------------------------------------------------\n";
+const std::string TestCaseBase::kLogName = "log.txt";
+
+TestCaseBase::TestCaseBase( const char* name ) : m_Name( name ) {}
 
 void TestCaseBase::execute() {
-    printDivider();
-    printf( "%s\n", m_Name );
-    printDivider();
+    m_OutFile.open( kLogName.c_str(), std::ofstream::trunc );
+    m_OutFile.close();
+
+    log( std::string( "Starting " ) + m_Name + "...\n\n" );
+
+    runTest();
 }
 
 void TestCaseBase::startStep( uint32_t num ) {
-    printDivider();
-    printf( "TC step %u\n", num );
-    printDivider();
+    std::stringstream ss;
+    ss << kDivider << "TC step " << num << "\n\n";
+    log( ss.str() );
+
+    m_CurrentStep = num;
+    m_CurrentStepPassCounter = 0;
+    m_CurrentStepFailCounter = 0;
 }
 
-void TestCaseBase::checkExpectedOutput( bool arg ) {
+void TestCaseBase::endStep( void ) {
+    std::stringstream ss;
+    uint32_t step_count = m_CurrentStepPassCounter + m_CurrentStepFailCounter;
+    ss << "\nTC step " << m_CurrentStep << " finished: " << m_CurrentStepPassCounter
+        << "/" << step_count << " checks PASSED.\n\n";
+    log( ss.str() );
+}
+
+void TestCaseBase::checkExpectedOutput(
+    bool arg, uint32_t line, const char* file ) {
+
+    std::stringstream ss;
+
     if( arg ) {
-        // TODO: Success case
+// ss << "Checking expected output: PASS on line " << line << std::endl;
+//        log( ss.str() );
+        m_CurrentStepPassCounter++;
     }
     else {
-        // TODO: Failure case
+        ss << "Checking expected output: FAIL (on line " << line << ")"
+            << std::endl;
+        log( ss.str() );
+        m_CurrentStepFailCounter++;
     }
+}
+
+void TestCaseBase::log( std::string str ) {
+    std::cout << str;
+    m_OutFile.open( kLogName.c_str(), std::ofstream::app );
+    m_OutFile << str;
+    m_OutFile.close();
 }
 /*
 void TestCaseBase::comment( const char* str ) {

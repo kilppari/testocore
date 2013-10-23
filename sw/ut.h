@@ -21,31 +21,38 @@
 #ifndef UT_H_
 #define UT_H_
 
-const char kDivider[ 81 ] =
-"-------------------------------------------------------------------------------\0";
 
-#define UT_START_STEP( num ) startStep( num )
-#define UT_CHECK_OUTPUT( expr ) checkExpectedOutput( expr )
+#define UT_START_STEP( num ) { startStep( num )
+#define UT_END_STEP endStep(); }
+#define UT_CHECK_OUTPUT( expr ) checkExpectedOutput( expr, __LINE__, __FILE__ )
 #define UT_COMMENT( ... ) printf( __VA_ARGS__ )
 #define UT_DIVIDER printDivider()
 
 class TestCaseBase {
-    protected:
-    uint32_t m_CurrentStep;
+
+private:
+    virtual void runTest( void ) = 0;
     const char* m_Name;
-//std::string m_Name;
+    std::ofstream m_OutFile;
+    static const std::string kDivider;
+    static const std::string kLogName;
+    uint32_t m_CurrentStepPassCounter;
+    uint32_t m_CurrentStepFailCounter;
+
+protected:
+    uint32_t m_CurrentStep;
 
     void startStep( uint32_t num );
-    void checkExpectedOutput( bool arg );
-    void printDivider( void ) { printf( "%s\n", kDivider ); }
-//    void comment( const char* str);
+    void endStep( void );
+    void checkExpectedOutput( bool arg, uint32_t line, const char* file );
+    void printDivider( void ) { log( kDivider ); }
+    void log( std::string str );
 
-    public:
+public:
     TestCaseBase( const char* name );
     virtual ~TestCaseBase() {}
-    virtual void runTest( void ) = 0;
-    void execute();
 
+    void execute();
 };
 
 #endif /* #ifndef UT_H_*/

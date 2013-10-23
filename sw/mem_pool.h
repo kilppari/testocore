@@ -61,8 +61,8 @@ private:
     MemoryPool( const MemoryPool& copy );
 
 public:
-    // Allocates memory and initializes the blocks. Sets pool id.
-    explicit MemoryPool( uint32_t pool_index, uint32_t block_size, uint32_t block_count );
+    // Allocates memory and initializes the blocks.
+    explicit MemoryPool( uint32_t block_size, uint32_t block_count );
     // Destructor frees the allocated memory.
     ~MemoryPool( void );
 
@@ -120,7 +120,7 @@ public:
     // Removes and destroys pool based on given block size
     bool removePoolByBlockSize( uint32_t size );
     // Clears the pool list and destroys all pools
-    void clearPoolList( void );
+    void clearAllPools( void );
     // Returns number of pools in the list
     uint16_t getPoolCount( void );
     // Chooses the most suitable pool and allocates block from it

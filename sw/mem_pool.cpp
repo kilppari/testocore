@@ -1,6 +1,6 @@
 /******************************************************************************/
 /**
-    Memory pool implementation for Testocore 2D engine.
+    Memory pool implementation for Testocore utilities.
     Copyright (C) 2013 Pekka Mäkinen
 
     This program is free software; you can redistribute it and/or modify
@@ -38,12 +38,10 @@
 /* class MemoryPool see mem_pool.h */
 /*----------------------------------------------------------------------------*/
 
-MemoryPool::MemoryPool(
-    uint32_t pool_id, uint32_t block_size, uint32_t block_count )
-    : m_PoolId( pool_id ),
-      m_BlockSize( block_size ),
-      m_BlockCount( block_count )
-    {
+MemoryPool::MemoryPool( uint32_t block_size, uint32_t block_count )
+    : m_BlockSize( block_size ),
+      m_BlockCount( block_count ) {
+
     assert( block_size >= sizeof( void* ) &&
         "Error: Block size must be big enough to hold one pointer when the block is not used\n" );
 
@@ -55,9 +53,8 @@ MemoryPool::MemoryPool(
     m_pFreeMemBlock = ( MemBlockStr* )m_pPool;
     MemBlockStr* pBlock = m_pFreeMemBlock;
 //    printf( "pBlock: %p\n", pBlock );
-    for( uint32_t i = 0; i < block_count; i++ )
-        {
-        pBlock->header = pool_id;
+    for( uint32_t i = 0; i < block_count; i++ ) {
+        pBlock->header = 0;
         pBlock->pData = NULL;
         //  Set data field to point to next free block
         if( i < block_count - 1 ) {
@@ -65,8 +62,8 @@ MemoryPool::MemoryPool(
             }
         pBlock = ( MemBlockStr* )pBlock->pData;
 //        DPRINT( "pBlock: %p\n", pBlock )
-        }
     }
+}
 
 MemoryPool::~MemoryPool( void )
     {
@@ -143,7 +140,7 @@ MemPoolManager::MemPoolManager():  m_PoolIdCounter( 0 ){
 }
 
 MemPoolManager::~MemPoolManager() {
-    clearPoolList();
+    clearAllPools();
 }
 
 /**
@@ -196,6 +193,21 @@ void MemPoolManager::removePoolNode( MemPoolNodeStr* node_ptr ) {
         return;
     }
     node_ptr->pPool = NULL;
+
+    // Update list head and tail if needed
+    if( node_ptr == m_PoolList.pHead &&
+        node_ptr == m_PoolList.pTail ) {
+        m_PoolList.pHead = NULL;
+        m_PoolList.pTail = NULL;
+    }
+    else if( node_ptr == m_PoolList.pHead ) {
+        m_PoolList.pHead = node_ptr->pNext;
+    }
+    else if( node_ptr == m_PoolList.pTail ) {
+        m_PoolList.pTail = node_ptr->pPrev;
+    }
+
+    // Update adjacent nodes
     if( node_ptr->pPrev != NULL ) {
         node_ptr->pPrev->pNext = node_ptr->pNext;
     }
@@ -289,7 +301,7 @@ uint16_t MemPoolManager::getPoolCount( void ) {
  * Removes all pools from the list.
  * All pools and the list nodes are deallocated.
  */
-void MemPoolManager::clearPoolList( void ) {
+void MemPoolManager::clearAllPools( void ) {
     // Find the correct pool from the list
     MemPoolNodeStr* node_ptr = m_PoolList.pHead;
     while( node_ptr != NULL ) {
