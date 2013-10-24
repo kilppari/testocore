@@ -1,15 +1,36 @@
+/******************************************************************************/
+/**
+    Test script for MemoryPool and MemPoolManager ( Testocore project )
+    Copyright (C) 2013 Pekka Mäkinen
+    makinpek [ at ] gmail
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+/******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <time.h>
 #include <fstream>
 #include <string>
+#include <sstream>
 
+// Testocore headers:
 #include "../sw/mem_pool.h"
+#include "../sw/timer.h"
 #include "../sw/ut.h"
-
-#define BLOCK_COUNT 10000
-#define BLOCK_SIZE 1000
 
 
 class TestCase : public TestCaseBase {
@@ -18,7 +39,6 @@ class TestCase : public TestCaseBase {
     ~TestCase() { }
     void runTest();
 };
-
 
 int main( void ) {
 
@@ -33,88 +53,88 @@ int main( void ) {
  * Define test script here.
  */
 void TestCase::runTest( void ) {
-
-
 /* ------------------------------
    TC step 1
    ------------------------------ */
-#if 0
+
     UT_START_STEP( 1 );
 
-    MemoryPool MemPool( 1, BLOCK_SIZE, BLOCK_COUNT );
-    void* temp_ptr[ BLOCK_COUNT ];
+    uint32_t block_size = 1024;
+    uint32_t block_count = 100000;
+
+    MemoryPool MemPool( block_size, block_count );
+    void* temp_ptr[ block_count ];
 
     UT_COMMENT( "Memory pool speed benchmark\n" );
-    UT_COMMENT( "%d allocations and deallocations with block size of %d bytes:\n", BLOCK_COUNT, BLOCK_SIZE );
+    UT_COMMENT( block_count << " allocations and deallocations with block " <<
+                "size of " << block_size << " bytes:\n" );
 
     /* Preconditions
      */
-
-    struct timespec ts;
-    struct timespec ts2;
-
-
     // Using mempool:
-    clock_gettime( CLOCK_MONOTONIC,&ts );
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
+    Timer timer = Timer();
+    for( int i = 0; i < block_count; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
+    for( int i = 0; i < block_count; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
-    clock_gettime( CLOCK_MONOTONIC,&ts2 );
-
-    UT_COMMENT( "Total time for memory pool:\t%luus\n", ( ts2.tv_nsec - ts.tv_nsec ) / 1000 );
+    uint32_t size = sizeof( Timer );
+    UT_COMMENT(
+        "Total time for memory pool:\t" << timer.getElapsed() << " us\n" );
 
     // Using malloc:
-    clock_gettime( CLOCK_MONOTONIC,&ts );
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
-        temp_ptr[ i ] = malloc( BLOCK_SIZE );
+    timer.reset();
+    for( int i = 0; i < block_count; i++ ) {
+        temp_ptr[ i ] = malloc( block_size );
     }
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
+    for( int i = 0; i < block_count; i++ ) {
         free( temp_ptr[ i ] );
     }
-    clock_gettime( CLOCK_MONOTONIC,&ts2 );
 
-    UT_COMMENT( "Total time for malloc:\t\t%luus\n", ( ts2.tv_nsec - ts.tv_nsec ) / 1000 );
+    UT_COMMENT(
+        "Total time for memory pool:\t" << timer.getElapsed() << " us\n" );
 
     UT_END_STEP;
-#endif
+
 /* ------------------------------
    TC step 2
+
+   Single mem pool linear
+   allocation and deallocation.
    ------------------------------ */
 
     UT_START_STEP( 2 );
 
-    MemoryPool MemPool( BLOCK_SIZE, BLOCK_COUNT );
-    void* temp_ptr[ BLOCK_COUNT ];
+    uint32_t block_size = 1024;
+    uint32_t block_count = 100000;
+
+    MemoryPool MemPool( block_size, block_count );
+    void* temp_ptr[ block_count ];
 
     UT_COMMENT( "Checking expected free block counts\n" );
 
-    UT_COMMENT( "Free blocks: %u\n", MemPool.getFreeBlockCount() );
+    UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
     UT_COMMENT( "Allocating 10000 blocks..\n" );
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
+    for( int i = 0; i < block_count; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
-    UT_COMMENT( "Free blocks: %u\n", MemPool.getFreeBlockCount() );
+    UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == 0 );
     UT_COMMENT( "Deallocating 10000 blocks..\n" );
-    for( int i = 0; i < BLOCK_COUNT; i++ ) {
+    for( int i = 0; i < block_count; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
-    UT_COMMENT( "Free blocks: %u\n", MemPool.getFreeBlockCount() );
+    UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
     UT_COMMENT( "Allocating 5000 blocks..\n" );
-    for( int i = 0; i < BLOCK_COUNT / 2; i++ ) {
+    for( int i = 0; i < block_count / 2; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
-    UT_COMMENT( "Free blocks: %u\n", MemPool.getFreeBlockCount() );
+    UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count / 2 );
     UT_COMMENT( "Deallocating 5000 blocks..\n" );
-    for( int i = 0; i < BLOCK_COUNT / 2; i++ ) {
+    for( int i = 0; i < block_count / 2; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
-    UT_COMMENT( "Free blocks: %u\n", MemPool.getFreeBlockCount() );
-
-    printDivider();
-
+    UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
 
     UT_END_STEP;
 

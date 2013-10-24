@@ -11,5 +11,11 @@ TARGET = testocore
 INCLUDEPATH += .
 
 # Input
-HEADERS += sw/mem_pool.h sw/ut.h
-SOURCES += sw/mem_pool.cpp sw/ut.cpp ut/ut_mem_pool.cpp
+HEADERS += sw/mem_pool.h \
+           sw/ut.h \
+           sw/timer.h
+
+SOURCES += sw/mem_pool.cpp \
+           sw/ut.cpp \
+           sw/timer.cpp \
+           ut/ut_mem_pool.cpp
