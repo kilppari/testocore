@@ -1,0 +1,6 @@
+# Compiled
+*.o
+*.exe
+
+# Emacs autosaves
+.~
