@@ -28,11 +28,6 @@
 
 const uint32_t Timer::kMaxSeconds = 0xFFFFF;
 const uint32_t Timer::kWrapCount = 0x3E800000; // 0x100000 * 1000;
-/*
-const uint8_t Timer::TIMER_IS_RUNNING = 1;
-const uint8_t Timer::TIMER_WAS_RESUMED = 2;
-const uint8_t Timer::TIMER_WAS_RESET = 4;
-*/
 
 /**
  * Constructor, starts timer immediately.
@@ -40,7 +35,7 @@ const uint8_t Timer::TIMER_WAS_RESET = 4;
 Timer::Timer() :
     m_MilliCounter( 0 ), m_LastStartCount( 0 ), m_LastStopCount( 0 ),
     m_IsRunning( true ), // Start timer instantly
-    m_WasResumed( false ), m_WasReset( false ) {
+    m_WasResumed( false ) {
 
     timeb tb;
     ftime( &tb );
@@ -68,7 +63,7 @@ void Timer::stop( void ) {
     }
     m_IsRunning = false;
     m_WasResumed = false;
-    m_WasReset = false;
+//    m_WasReset = false;
 }
 
 /**
@@ -85,7 +80,7 @@ void Timer::resume( void ) {
     m_LastStartCount =  tb.millitm + ( tb.time & kMaxSeconds ) * 1000;
     m_IsRunning = true;
     m_WasResumed = true;
-    m_WasReset = false;
+//    m_WasReset = false;
 }
 
 /**
@@ -96,7 +91,7 @@ void Timer::reset( void ) {
     ftime( &tb );
     m_LastStartCount = tb.millitm + ( tb.time & kMaxSeconds ) * 1000;
     m_MilliCounter = 0;
-    m_WasReset = true;
+//    m_WasReset = true;
     m_WasResumed = false;
 }
 

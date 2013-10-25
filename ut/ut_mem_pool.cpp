@@ -28,10 +28,9 @@
 #include <sstream>
 
 // Testocore headers:
-#include "../sw/mem_pool.h"
-#include "../sw/timer.h"
-#include "../sw/ut.h"
-
+#include "mem_pool.h"
+#include "timer.h"
+#include "ut.h"
 
 class TestCase : public TestCaseBase {
     public:
@@ -73,22 +72,21 @@ void TestCase::runTest( void ) {
      */
     // Using mempool:
     Timer timer = Timer();
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
-    uint32_t size = sizeof( Timer );
     UT_COMMENT(
         "Total time for memory pool:\t" << timer.getElapsed() << " us\n" );
 
     // Using malloc:
     timer.reset();
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         temp_ptr[ i ] = malloc( block_size );
     }
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         free( temp_ptr[ i ] );
     }
 
@@ -116,22 +114,22 @@ void TestCase::runTest( void ) {
 
     UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
     UT_COMMENT( "Allocating 10000 blocks..\n" );
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
     UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == 0 );
     UT_COMMENT( "Deallocating 10000 blocks..\n" );
-    for( int i = 0; i < block_count; i++ ) {
+    for( uint32_t i = 0; i < block_count; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
     UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
     UT_COMMENT( "Allocating 5000 blocks..\n" );
-    for( int i = 0; i < block_count / 2; i++ ) {
+    for( uint32_t i = 0; i < block_count / 2; i++ ) {
         temp_ptr[ i ] = MemPool.alloc();
     }
     UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count / 2 );
     UT_COMMENT( "Deallocating 5000 blocks..\n" );
-    for( int i = 0; i < block_count / 2; i++ ) {
+    for( uint32_t i = 0; i < block_count / 2; i++ ) {
         MemPool.dealloc( temp_ptr[ i ] );
     }
     UT_CHECK_OUTPUT( MemPool.getFreeBlockCount() == block_count );
@@ -221,14 +219,14 @@ void TestCase::runTest( void ) {
     // Check allocation and deallocation from pool_32, other pools
     // should be unaffected.
     void* ptr_array[ 100 ];
-    for( int i = 0; i < 20; i++ ) {
+    for( uint32_t i = 0; i < 20; i++ ) {
         ptr_array[ i ] = PoolManager.alloc( 32 );
         UT_CHECK_OUTPUT( pool_32_ptr->getFreeBlockCount() == 19 - i );
     }
     UT_CHECK_OUTPUT( pool_64_ptr->getFreeBlockCount() == 10 );
     UT_CHECK_OUTPUT( pool_128_ptr->getFreeBlockCount() == 5 );
 
-    for( int i = 0; i < 20; i++ ) {
+    for( uint32_t i = 0; i < 20; i++ ) {
         PoolManager.dealloc( ptr_array[ i ] );
         UT_CHECK_OUTPUT( pool_32_ptr->getFreeBlockCount() == i + 1 );
     }
@@ -237,14 +235,14 @@ void TestCase::runTest( void ) {
 
     // Check allocation and deallocation from pool_128, other pools
     // should be unaffected.
-    for( int i = 0; i < 5; i++ ) {
+    for( uint32_t i = 0; i < 5; i++ ) {
         ptr_array[ i ] = PoolManager.alloc( 128 );
         UT_CHECK_OUTPUT( pool_128_ptr->getFreeBlockCount() == 4 - i );
     }
     UT_CHECK_OUTPUT( pool_64_ptr->getFreeBlockCount() == 10 );
     UT_CHECK_OUTPUT( pool_32_ptr->getFreeBlockCount() == 20 );
 
-    for( int i = 0; i < 5; i++ ) {
+    for( uint32_t i = 0; i < 5; i++ ) {
         PoolManager.dealloc( ptr_array[ i ] );
         UT_CHECK_OUTPUT( pool_128_ptr->getFreeBlockCount() == i + 1 );
     }

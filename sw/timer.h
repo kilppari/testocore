@@ -33,7 +33,6 @@ class Timer {
 private:
     // The time how long timer has been running (in milliseconds).
     uint32_t m_MilliCounter;
-
     // Time when timer was last started/resumed/reset
     uint32_t m_LastStartCount;
     // Time when timer was last stopped/reset
@@ -42,7 +41,7 @@ private:
     // Flags to keep track of timer state
     bool m_IsRunning;
     bool m_WasResumed;
-    bool m_WasReset;
+//    bool m_WasReset;
 
     // Max number of seconds (just before timer wraps around)
     static const uint32_t kMaxSeconds;

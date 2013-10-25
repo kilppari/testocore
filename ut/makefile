@@ -8,13 +8,16 @@ CC=g++
 # Flags:
 CFLAGS=-c -Wall -g
 
+# Binary name
+FILENAME=run_tc
+
 ut_run: ut_mem_pool
 
 # ------------------------------------------------------------------------------
 # UT targets
 # ------------------------------------------------------------------------------
-ut_mem_pool: mem_pool.o ut.o ut_mem_pool.o
-	$(CC) -o run_ut mem_pool.o ut.o ut_mem_pool.o -lrt
+ut_mem_pool: mem_pool.o ut.o timer.o ut_mem_pool.o
+	$(CC) -o $(FILENAME) mem_pool.o ut.o timer.o ut_mem_pool.o
 
 # ------------------------------------------------------------------------------
 # Compile test scripts
@@ -31,6 +34,9 @@ ut.o: ../sw/ut.cpp
 mem_pool.o: ../sw/mem_pool.cpp
 	$(CC) $(CFLAGS) ../sw/mem_pool.cpp
 
+timer.o: ../sw/timer.cpp
+	$(CC) $(CFLAGS) ../sw/timer.cpp
+
 # Cleanup
 clean:
-	rm -rf *.o run_ut
+	rm *.o
