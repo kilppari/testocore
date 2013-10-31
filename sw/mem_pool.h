@@ -129,4 +129,10 @@ public:
     void dealloc( void* ptr );
 };
 
+// Global variable to hold pointer to mem pool manager to be used
+// for all general allocations.
+static MemPoolManager* kMEMPOOLMANAGER;
+#define POOL_ALLOC( bytes ) kMEMPOOLMANAGER->alloc( bytes )
+#define POOL_DEALLOC( ptr ) kMEMPOOLMANAGER->dealloc( ptr )
+
 #endif /* #ifndef MEM_POOL_H */
