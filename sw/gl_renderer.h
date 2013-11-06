@@ -67,12 +67,14 @@ public:
     // Loads and compiles shaders.
     bool loadShaders( const char* v_shader, const char* f_shader );
 
-    // Loads vertex data into GPU memory.
-    void loadVertexData( GLVertexDataStr& data );
-
     // Renders all the objects in the rendering list (m_Renderables).
     void draw();
 
+// -----------------------------------------------------------------------------
+// Private methods:
+private:
+    // Loads vertex data into GPU memory.
+    void loadVertexData( GLVertexDataStr& data );
 };
 
 #endif /* #ifndef GL_RENDERER_H_ */

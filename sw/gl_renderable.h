@@ -19,6 +19,21 @@
 #ifndef GL_RENDERABLE_H_
 #define GL_RENDERABLE_H_
 
+struct GLVertex {
+    union {
+        GLfloat pos[ 3 ];
+        struct {
+            GLfloat x, y ,z;
+        };
+    };
+    union {
+        GLfloat color[ 4 ];
+        struct {
+            GLfloat r, g, b, a;
+        };
+    };
+};
+
 /**
  * Holds vertex information for a single GLRenderable.
  */

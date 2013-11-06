@@ -29,6 +29,10 @@
 #include "gl_renderable.h"
 #include "gl_renderer.h"
 
+/* -------------------------------------------------------------------------- */
+// Public methods
+/* -------------------------------------------------------------------------- */
+
 /*
  * Initializes vertex array object.
  */
@@ -59,15 +63,19 @@ void GLRenderer::cleanup() {
 }
 
 /*
- * Adds a new GLRenderable into the rendering list.
+ * Adds a new GLRenderable into the rendering list and load
+ * it into GPU memory.
  */
 void GLRenderer::addRenderable( GLRenderable* renderable_ptr ) {
     renderable_ptr->setId( m_RunningId++ );
     m_Renderables.pushBack( renderable_ptr );
+
+    loadVertexData( renderable_ptr->getVertexDataRef() );
 }
 
 /*
- * Removes GLRenderable from the rendering list.
+ * Removes GLRenderable from the rendering list and deletes
+ * corresponding GL vertexbuffer.
  */
 void GLRenderer::removeRenderable( uint64_t id ) {
 
@@ -75,6 +83,8 @@ void GLRenderer::removeRenderable( uint64_t id ) {
 
     while( node_ptr != NULL ) {
         if( node_ptr->item()->getId() == id ) {
+            GLuint id = node_ptr->item()->getVertexDataRef().buffer_id;
+            glDeleteBuffers( 1, &id );
             m_Renderables.remove( node_ptr );
             break;
         }
@@ -184,20 +194,6 @@ bool GLRenderer::loadShaders( const char* v_shader, const char* f_shader ) {
 }
 
 /*
- * Loads vertex data into GPU memory.
- */
-void GLRenderer::loadVertexData( GLVertexDataStr& data ) {
-
-    glGenBuffers( 1, &(data.buffer_id) );
-    glBindBuffer( GL_ARRAY_BUFFER, data.buffer_id );
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        data.buffer_size,
-        data.buffer_ptr,
-        GL_STATIC_DRAW );
-}
-
-/*
  * Renders all the objects in the rendering list (m_Renderables).
  */
 void GLRenderer::draw( void ) {
@@ -218,25 +214,56 @@ void GLRenderer::draw( void ) {
         // in the "MVP" uniform
         glUniformMatrix4fv( m_ShaderMVPLocation, 1, GL_FALSE, &mvp[0][0] );
 
-        // 1st attribute buffer for vertices
         GLVertexDataStr& vertex_data = node_ptr->item()->getVertexDataRef();
-
-        glEnableVertexAttribArray( 0 );
         glBindBuffer( GL_ARRAY_BUFFER, vertex_data.buffer_id );
+
+        // 1st attribute buffer for vertex positions
+        glEnableVertexAttribArray( 0 );
         glVertexAttribPointer(
             0, //attribute 0
-            3, //size
+            3, //size (x, y, z)
             GL_FLOAT, // type of the vertices
             GL_FALSE, // not normalized
-            0, // stride
+            28, // stride ( size of GLVertex )
             ( void* )0 // Array buffer offset
+        );
+
+        // 2nd attribute buffer for vertex colors
+        glEnableVertexAttribArray( 1 );
+        glVertexAttribPointer(
+            1, //attribute 1
+            4, //size (r, g, b, a)
+            GL_FLOAT, // type of the vertices
+            GL_FALSE, // not normalized
+            28, // stride
+            ( void* )12 // Array buffer offset
         );
 
         // Draw the Renderable:
         glDrawArrays( GL_TRIANGLES, 0, vertex_data.vertex_count );
         glDisableVertexAttribArray( 0 );
+        glDisableVertexAttribArray( 1 );
 
         node_ptr = node_ptr->next();
     }
 }
+
+/* -------------------------------------------------------------------------- */
+// Private methods
+/* -------------------------------------------------------------------------- */
+
+/*
+ * Loads vertex data into GPU memory.
+ */
+void GLRenderer::loadVertexData( GLVertexDataStr& data ) {
+
+    glGenBuffers( 1, &(data.buffer_id) );
+    glBindBuffer( GL_ARRAY_BUFFER, data.buffer_id );
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        data.buffer_size,
+        data.buffer_ptr,
+        GL_STATIC_DRAW );
+}
+
 
