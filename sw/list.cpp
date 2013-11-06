@@ -22,8 +22,22 @@
 #include <stdint.h>
 #include <cstring>
 
+#include <GL/glew.h>
+#include <glm/glm.hpp>
+#include "gl_renderable.h"
+
 #include "mem_pool.h" // For custom memory allocation calls
 #include "list.h"
+
+/*
+template <class T>
+List< T >::List() : m_pHead( NULL ), m_pTail( NULL ),
+        m_AllocMethod( USE_STANDARD_ALLOCATION ) {}
+*/
+template <class T>
+List< T >::~List() {
+    clear();
+}
 
 /*
  * Inserts new object at the front of the list (allocates new node).
