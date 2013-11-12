@@ -15,54 +15,54 @@ LIBS=-lglfw3 -lopengl32 -lglew32 -lgdi32
 EXEPREFIX=run_
 
 # SW source path (relative)
-SRC_PATH=../sw/
+SRC_PATH=../sw
+
+# Path for binaries
+BIN_PATH=bin
 
 all: ut_mem_pool ut_playground ut_timer
 
-# ------------------------------------------------------------------------------
-# ut_mem_pool
-# ------------------------------------------------------------------------------
-UT_MEM_POOL_OBJS = mem_pool.o ut.o timer.o ut_mem_pool.o
-ut_mem_pool: $(UT_MEM_POOL_OBJS)
-	$(CC) -o $(EXEPREFIX)$@ $(UT_MEM_POOL_OBJS)
+_SW_OBJS =	mem_pool.o \
+		ut.o \
+		timer.o \
+		gl_renderable.o \
+		gl_renderer.o \
 
-ut_mem_pool.o: ut_mem_pool.cpp
-	$(CC) $(CFLAGS) ut_mem_pool.cpp -I$(SRC_PATH)
+SW_OBJS = $(patsubst %,$(BIN_PATH)/%,$(_SW_OBJS))
 
 # ------------------------------------------------------------------------------
-# ut_playground
+# TARGETS
 # ------------------------------------------------------------------------------
-UT_PLAYGROUND_OBJS = 	mem_pool.o \
-			ut.o \
-			timer.o \
-			gl_renderable.o \
-			gl_renderer.o \
-			ut_playground.o
+
+## 1. ut_playground
+UT_PLAYGROUND_OBJS = $(SW_OBJS) $(BIN_PATH)/ut_playground.o
 ut_playground: $(UT_PLAYGROUND_OBJS)
-	$(CC) -o $(EXEPREFIX)$@ $(UT_PLAYGROUND_OBJS) $(LIBS)
+	$(CC) -o $(BIN_PATH)/$(EXEPREFIX)$@ $(UT_PLAYGROUND_OBJS) $(LIBS)
 
-ut_playground.o: ut_playground.cpp
-	$(CC) $(CFLAGS) ut_playground.cpp -I$(SRC_PATH)
 
-# ------------------------------------------------------------------------------
-# ut_timer
-# ------------------------------------------------------------------------------
-UT_TIMER_OBJS = ut.o timer.o ut_timer.o
+## 2. ut_mem_pool
+UT_MEM_POOL_OBJS = $(SW_OBJS) $(BIN_PATH)/ut_mem_pool.o
+ut_mem_pool: $(UT_MEM_POOL_OBJS)
+	$(CC) -o $(BIN_PATH)/$(EXEPREFIX)$@ $(UT_MEM_POOL_OBJS) $(LIBS)
+
+
+## 3. ut_timer
+UT_TIMER_OBJS = $(SW_OBJS) $(BIN_PATH)/ut_timer.o
 ut_timer: $(UT_TIMER_OBJS)
-	$(CC) -o $(EXEPREFIX)$@ $(UT_TIMER_OBJS)
-
-ut_timer.o: ut_timer.cpp
-	$(CC) $(CFLAGS) ut_timer.cpp -I$(SRC_PATH)
-
+	$(CC) -o $(BIN_PATH)/$(EXEPREFIX)$@ $(UT_TIMER_OBJS) $(LIBS)
 
 # ------------------------------------------------------------------------------
-# Compile SW files
+# Compile SW and UT files
 # ------------------------------------------------------------------------------
 # When required, compiles file.cpp sources into file.o objects
 # $< refers to the right side of the : below
-%.o: $(SRC_PATH)%.cpp
-	$(CC) $(CFLAGS) $^
+$(BIN_PATH)/%.o: $(SRC_PATH)/%.cpp
+	$(CC) $(CFLAGS) $^ -o $@
+
+$(BIN_PATH)/%.o: %.cpp
+	$(CC) $(CFLAGS) $^ -I$(SRC_PATH) -o $@
+
 
 # Cleanup
 clean:
-	rm *.o *~ *.exe
+	rm bin/*.o bin/*.exe
