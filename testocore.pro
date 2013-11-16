@@ -13,9 +13,17 @@ INCLUDEPATH += .
 # Input
 HEADERS += sw/mem_pool.h \
            sw/ut.h \
-           sw/timer.h
+           sw/timer.h \
+           sw/list.h \
+           sw/gl_renderable.h \
+           sw/gl_renderer.h
 
 SOURCES += sw/mem_pool.cpp \
            sw/ut.cpp \
            sw/timer.cpp \
-           ut/ut_mem_pool.cpp
+           sw/gl_renderable.cpp \
+           sw/gl_renderer.cpp \
+           ut/ut_mem_pool.cpp \
+           ut/ut_gl_renderer.cpp \
+           ut/ut_playground.cpp
+

@@ -26,10 +26,12 @@
 #include <string>
 #include <sstream>
 
+#define DEFINE_MEMPOOL_MANAGER_GLOBAL
 #include "mem_pool.h"
 #include "list.h"
 #include "gl_renderable.h"
 #include "gl_renderer.h"
+#include "timer.h"
 #include "ut.h"
 
 // Vertices for a cube
@@ -131,7 +133,8 @@ void TestCase::runTest( void ) {
 
     GLRenderer Renderer;
     if( !Renderer.loadShaders(
-        "../sw/shaders/vertex_shader.glsl", "../sw/shaders/fragment_shader.glsl" ) ) {
+        "../../sw/shaders/vertex_shader.glsl",
+        "../../sw/shaders/fragment_shader.glsl" ) ) {
             UT_COMMENT( "Failed to load shaders\n." );
             UT_CHECK_OUTPUT( false );
         return;
@@ -153,17 +156,20 @@ void TestCase::runTest( void ) {
         vertices[ i ].g = 1;
         vertices[ i ].b = 0;
     }
+    GLRenderable* model[ 100 ];
+    for( int i= 0; i < 100; i++ ) {
+        model[ i ] = new GLRenderable();
+	GLVertexDataStr& vertex_data = model[ i ]->getVertexDataRef();
+	vertex_data.buffer_ptr = vertices[ 0 ].pos;
+	vertex_data.buffer_size = sizeof( vertices );
+	vertex_data.vertex_count = 12 * 3;
+	model[ i ]->translate( (float)i / 100.0, 0, 0 );
+	Renderer.addRenderable( model[ i ] );
+    }
 
-    GLRenderable model;
-    GLVertexDataStr& vertex_data = model.getVertexDataRef();
-    vertex_data.buffer_ptr = vertices[ 0 ].pos;
-    vertex_data.buffer_size = sizeof( vertices );
-    vertex_data.vertex_count = 12 * 3;
-
-    Renderer.addRenderable( &model );
 
     // Rotate 30 degrees on x and y axes
-    model.rotate( 30, 1, 1, 0 );
+
 
     // Projection
     // 45 degree FOV, 4:3 ratio, display range: 0.1 unit <->100 units
@@ -179,19 +185,41 @@ void TestCase::runTest( void ) {
     Renderer.setProjectionMatrix( projection_matrix );
     Renderer.setViewMatrix( view_matrix );
 
-    // Main loop
-    while (!glfwWindowShouldClose(window))
-    {
-        Renderer.draw();
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
 
-        glfwSwapBuffers( window );
+    Timer timer = Timer();
+    int frame_count = 0;
+    // Main loop
+    while (!glfwWindowShouldClose(window)) {
+      //      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        Renderer.draw();
+	
+	glfwSwapBuffers( window );
         glfwPollEvents();
+
+	for( int i= 0; i < 100; i++ ) {	
+	  model[ i ]->rotate( 1, 1, 0 ,0 );
+	}
+
+	// Calculate time to draw one frame
+	++frame_count;
+	if ( timer.getElapsed() > 1000 ) {
+	  printf( "%f ms/frame (%d fps)\n", 1000.0/double(frame_count), frame_count );
+	  frame_count = 0;
+	  timer.reset();
+	}
     }
 
     glfwTerminate();
 
     // Cleanup VBO
     Renderer.cleanup();
+    for( int i= 0; i < 100; i++ ) {	
+        delete model[ i ];
+    }
 
     UT_END_STEP;
 

@@ -131,8 +131,13 @@ public:
 
 // Global variable to hold pointer to mem pool manager to be used
 // for all general allocations.
-static MemPoolManager* kMEMPOOLMANAGER;
-#define POOL_ALLOC( bytes ) kMEMPOOLMANAGER->alloc( bytes )
-#define POOL_DEALLOC( ptr ) kMEMPOOLMANAGER->dealloc( ptr )
+#ifdef DEFINE_MEMPOOL_MANAGER_GLOBAL
+MemPoolManager* __kMEMPOOLMANAGER;
+#else
+extern MemPoolManager* __kMEMPOOLMANAGER;
+#endif
+
+#define POOL_ALLOC( bytes ) __kMEMPOOLMANAGER->alloc( bytes )
+#define POOL_DEALLOC( ptr ) __kMEMPOOLMANAGER->dealloc( ptr )
 
 #endif /* #ifndef MEM_POOL_H */

@@ -101,7 +101,7 @@ bool GLRenderer::loadShaders( const char* v_shader, const char* f_shader ) {
     char* f_buf_ptr = NULL;
     FILE* fp = NULL;
 
-    // Read vertex shader source into f_buf_ptr
+    // Read vertex shader source into v_buf_ptr
     unsigned int size = 0;
     fp = fopen( v_shader, "r" );
     if( fp != NULL ) {

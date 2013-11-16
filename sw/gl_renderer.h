@@ -36,6 +36,15 @@ private:
     glm::mat4 m_ViewMatrix;
 
 public:
+    enum LIST_MEM_ALLOC_TYPE { ALLOC_TYPE_MEM_POOL = 0, ALLOC_TYPE_STANDARD };
+
+    // Basic constructor, uses standard memory allocation with renderables list
+    GLRenderer() {}
+
+    // Constructor for specifying the memory allocation for renderables list
+    GLRenderer( LIST_MEM_ALLOC_TYPE alloc_type ) :
+        m_Renderables( alloc_type ) {}
+
     ~GLRenderer() { cleanup(); }
     // Initializes vertex array object.
     void init();

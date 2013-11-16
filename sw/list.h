@@ -12,10 +12,6 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 /******************************************************************************/
 #ifndef LIST_H_
@@ -76,7 +72,7 @@ public:
     List() : m_pHead( NULL ), m_pTail( NULL ),
         m_AllocMethod( USE_STANDARD_ALLOCATION ) {}
 
-    List( const AllocTypeEnum alloc_type ) :
+    List( int alloc_type ) :
         m_pHead( NULL ), m_pTail( NULL ), m_AllocMethod( alloc_type ) {}
 
     // Destructor clears the list by deallocting all the nodes
@@ -114,6 +110,8 @@ bool List< T >::pushFront( T obj ) {
     Node< T >* node_ptr = NULL;
     if( m_AllocMethod == USE_MEM_POOL_ALLOCATION ) {
         node_ptr = ( Node< T >* )POOL_ALLOC( sizeof( Node< T > ) );
+        node_ptr->m_pNext = NULL;
+        node_ptr->m_pPrev = NULL;
     }
     else {
         node_ptr = new Node< T >();
@@ -143,6 +141,8 @@ bool List< T >::pushBack( T obj ) {
     Node< T >* node_ptr = NULL;
     if( m_AllocMethod == USE_MEM_POOL_ALLOCATION ) {
         node_ptr = ( Node< T >* )POOL_ALLOC( sizeof( Node< T > ) );
+        node_ptr->m_pNext = NULL;
+        node_ptr->m_pPrev = NULL;
     }
     else {
         node_ptr = new Node< T >();
