@@ -102,10 +102,12 @@ bool GLRenderer::loadShaders( const char* v_shader, const char* f_shader ) {
     FILE* fp = NULL;
 
     // Read vertex shader source into f_buf_ptr
+    unsigned int size = 0;
     fp = fopen( v_shader, "r" );
     if( fp != NULL ) {
-        fseek( fp, 0, SEEK_END );
-        uint32_t size = ftell( fp );
+        // count size manually, as SEEK_END doesn't find the EOF properly
+        // for some reason when debugging code
+        while( getc( fp ) != EOF ) { ++size; }
         fseek( fp, 0, SEEK_SET );
         v_buf_ptr = new char[ size + 1 ];
         fread( v_buf_ptr, size, 1, fp );
@@ -114,10 +116,10 @@ bool GLRenderer::loadShaders( const char* v_shader, const char* f_shader ) {
     }
 
     // Read fragment shader source into f_buf_ptr
+    size = 0;
     fp = fopen( f_shader, "r" );
     if( fp != NULL ) {
-        fseek( fp, 0, SEEK_END );
-        uint32_t size = ftell( fp );
+        while( getc( fp ) != EOF ) { ++size; }
         fseek( fp, 0, SEEK_SET );
         f_buf_ptr = new char[ size + 1 ];
         fread( f_buf_ptr, size, 1, fp );
