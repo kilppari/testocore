@@ -54,6 +54,11 @@ UT_GL_RENDERER_OBJS = $(SW_OBJS) $(BIN_PATH)/ut_gl_renderer.o
 ut_gl_renderer: $(UT_GL_RENDERER_OBJS)
 	$(CC) -o $(BIN_PATH)/$(EXEPREFIX)$@ $(UT_GL_RENDERER_OBJS) $(LIBS)
 
+## 5. ut_process
+UT_PROCESS_OBJS = bin/ut.o bin/ut_process.o
+ut_process: $(UT_PROCESS_OBJS)
+	$(CC) -o $(BIN_PATH)/$(EXEPREFIX)$@ $(UT_PROCESS_OBJS)
+
 # ------------------------------------------------------------------------------
 # Compile SW and UT files
 # ------------------------------------------------------------------------------
