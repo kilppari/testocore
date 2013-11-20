@@ -12,10 +12,6 @@
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to the Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
 /******************************************************************************/
 #include <stdio.h>
@@ -32,7 +28,8 @@ const std::string TestCaseBase::kDivider =
     "-------------------------------------------------------------------------------\n";
 const std::string TestCaseBase::kLogName = "log.txt";
 
-TestCaseBase::TestCaseBase( const char* name ) : m_Name( name ) {}
+TestCaseBase::TestCaseBase( const char* name ) :
+    m_Name( name ), m_TestCasePassed( true ) {}
 
 void TestCaseBase::execute() {
     m_OutFile.open( kLogName.c_str(), std::ofstream::trunc );
@@ -41,6 +38,15 @@ void TestCaseBase::execute() {
     log( std::string( "Starting " ) + m_Name + "...\n\n" );
 
     runTest();
+
+    log( kDivider + std::string( "Finished " ) + m_Name + "\n\n" );
+
+    if( m_TestCasePassed ) {
+        log( std::string( "Final verdict: PASS\n" ) );
+    }
+    else {
+        log( std::string( "Final verdict: FAIL\n" ) );
+    }
 }
 
 void TestCaseBase::startStep( uint32_t num ) {
@@ -56,9 +62,17 @@ void TestCaseBase::startStep( uint32_t num ) {
 void TestCaseBase::endStep( void ) {
     std::stringstream ss;
     uint32_t step_count = m_CurrentStepPassCounter + m_CurrentStepFailCounter;
+    char verdict[2][6] = { "FAIL\0", "PASS\0" };
+
+    if( m_CurrentStepFailCounter > 0 )
+        m_TestCasePassed = false;
+
     ss << "\nTC step " << m_CurrentStep << " finished: " << m_CurrentStepPassCounter
-        << "/" << step_count << " checks PASSED.\n\n";
+       << "/" << step_count << " checks passed. Preliminary verdict: "
+       << verdict[ (int)m_TestCasePassed ] << "\n";
     log( ss.str() );
+
+
 }
 
 void TestCaseBase::checkExpectedOutput(
@@ -67,12 +81,10 @@ void TestCaseBase::checkExpectedOutput(
     std::stringstream ss;
 
     if( arg ) {
-// ss << "Checking expected output: PASS on line " << line << std::endl;
-//        log( ss.str() );
         m_CurrentStepPassCounter++;
     }
     else {
-        ss << "Checking expected output: FAIL (on line " << line << ")"
+        ss << "- Expected output failed on line " << line << "."
             << std::endl;
         log( ss.str() );
         m_CurrentStepFailCounter++;
@@ -85,8 +97,3 @@ void TestCaseBase::log( std::string str ) {
     m_OutFile << str;
     m_OutFile.close();
 }
-/*
-void TestCaseBase::comment( const char* str ) {
-    printf( "%s\n", str );
-}
-*/
